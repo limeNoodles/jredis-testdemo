@@ -16,6 +16,7 @@ public class PhoneCode {
         jedis.auth("lime");
     }
 
+
     public String getCode(){
         Random random = new Random();
         String code = "";
@@ -32,7 +33,7 @@ public class PhoneCode {
         System.out.println(time);
     }
 
-    public void verifyCode(String phoneNum,String code){
+    public boolean verifyCode(String phoneNum,String code){
         String countKey = "VerifyCode"+phoneNum+":count";
         String codeKey = "VerifyCode"+code+":code";
         //设置每个手机每天发送三次
@@ -40,10 +41,27 @@ public class PhoneCode {
         if(count == null){
            int time = getRemainSecondsOneDay();
            jedis.setex(countKey,time,"1");
+            //验证码发送到redis中
+            jedis.setex(codeKey,120,code);
+            return true;
         }else if(Integer.parseInt(count)<=2){
             jedis.incr(countKey);
+            //验证码发送到redis中
+            jedis.setex(codeKey,120,code);
+            return true;
         }else {
+            //超过三次不再发送
+            return false;
+        }
+    }
 
+    public boolean makeSureCode(String code){
+        String codeKey = "VerifyCode"+code+":code";
+        String redisCode = jedis.get(codeKey);
+        if(redisCode.equals(code)){
+           return true;
+        }else {
+            return false;
         }
     }
 
