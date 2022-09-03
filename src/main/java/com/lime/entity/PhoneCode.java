@@ -17,7 +17,7 @@ public class PhoneCode {
     }
 
 
-    public String getCode(){
+    public static String getCode(){
         Random random = new Random();
         String code = "";
         for (int i=0;i<6;i++){
